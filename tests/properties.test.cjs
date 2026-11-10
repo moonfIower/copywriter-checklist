@@ -1,0 +1,7 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),a=require('../src/analyzer');
+test('properties preserve keyword list commas, derive nested URL and exclude frontmatter from counts',()=>{
+ const meta={copywriter:true,content_type:'article',title_tag:'Sensory Integration Therapy | Riverton Care Center',meta_description:'Care for residents.',url:'riverton.example/blog/sensory-integration-therapy',primary_keyword:'sensory integration therapy',secondary_keywords:['sensory issues'],local_keywords:['Riverton, OH','Riverton, Ohio'],topical_keywords:['sensory processing'],category:'Therapy',category_tags:['Rehabilitation','Veterans']};
+ const body='# Sensory integration therapy\n\nSensory integration therapy for Riverton, OH. Sensory issues in Riverton, Ohio.';
+ const r=a.analyze({meta,body});assert.equal(r.metadata.slug,'sensory-integration-therapy');assert.equal(r.metadata.site_url,'https://riverton.example');assert.equal(r.keywords.find(k=>k.phrase==='Riverton, OH').count,1);assert.ok(!r.keywords.some(k=>k.phrase==='OH'));assert.equal(r.metadata.category,'Therapy');assert.deepEqual(r.metadata.category_tags,meta.category_tags);assert.equal(r.total,a.words(a.parseBody(body).text).length);
+});
+test('empty property values override populated legacy table cells',()=>{const table='| Title Tag | Old title |\n|---|---|\n| Primary Keyword | Old keyword |';const r=a.prepareDocument({meta:{copywriter:true,title_tag:'',primary_keyword:''},body:table});assert.equal(r.meta.title_tag,'');assert.equal(r.meta.primary_keyword,'');});
